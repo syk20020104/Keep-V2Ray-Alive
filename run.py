@@ -33,7 +33,7 @@ hosts_info = json.loads(ssh_info_str)        # 解析JSON格式的SSH信息
 
 # 要执行的命令列表
 # commands = ["cd /usr/home/syk2002/domains/v2ray && pwd && ls -l && which pm2", "cd domains/v2ray && pwd && type pm2"]
-commands = ["pwd && ls -l && which pm2", "cd domains/v2ray && pwd && type pm2"]
+commands = ["pwd && ls -l && sh auto_renew.sh", "cd domains/v2ray && pwd && type pm2"]
 
 # 执行命令并获取结果
 results = ssh_execute_commands(hosts_info, commands)
