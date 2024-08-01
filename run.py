@@ -32,8 +32,8 @@ ssh_info_str = os.getenv('SSH_INFO', '[]')  # 从环境变量获取SSH信息
 hosts_info = json.loads(ssh_info_str)        # 解析JSON格式的SSH信息
 
 # 要执行的命令列表
-# commands = ["cd /usr/home/syk2002/domains/v2ray && pwd && ls -l && which pm2", "cd domains/v2ray && pwd && type pm2"]
-commands = ["pwd && ls -l && sh pm2_list.sh", "cd domains/v2ray && pwd && type pm2"]
+commands = ["/home/syk2002/.npm-global/bin/pm2 list&& pwd", "which pm2"]
+
 
 # 执行命令并获取结果
 results = ssh_execute_commands(hosts_info, commands)
