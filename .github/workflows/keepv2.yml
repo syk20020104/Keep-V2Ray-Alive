@@ -2,7 +2,7 @@ name: SSH Login
 
 on:
   schedule:
-    - cron: '0 13 */7 * *'  # 每月的5号北京时间19点运行
+    - cron: '0 22 * * *'  # 每天UTC时间晚上10点运行，对应UTC+2时区的凌晨0点
   workflow_dispatch:
 
 jobs:
