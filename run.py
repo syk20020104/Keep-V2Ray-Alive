@@ -48,7 +48,6 @@ for command, command_results in results.items():
 
 
 
-
 import requests
 
 # 定义发送企业微信消息的函数
@@ -69,28 +68,23 @@ def send_wechat_message(webhook_url, message, page=1, total_pages=None):
 # 从环境变量中获取企业微信Webhook URL
 wechat_webhook_url = os.getenv('WECHAT_WEBHOOK_URL')
 
-# 设置每条消息的最大长度和每页显示的命令结果数量
-MAX_PAGE_SIZE = 5  # 每页最多显示5条命令结果
+# 设置每条消息的最大长度
+MAX_MESSAGE_LENGTH = 2000  # 假设每条消息最大长度为2000字符
 
-# 准备消息并分页
-pages = []
-message_parts = []
-for i, (command, command_results) in enumerate(results.items()):
+# 准备要发送的消息内容
+message = "SSH命令执行结果汇总：\n"
+for command, command_results in results.items():
+    message += f"执行命令 '{command}' 的结果：\n"
     for hostname, command_executed, result in command_results:
-        single_message = f"命令 '{command}' 在服务器 {hostname} 上执行结果: {result}\n"
-        if len(message_parts) >= MAX_PAGE_SIZE and message_parts:
-            # 当达到每页最大消息数时，存储当前页消息并重置
-            pages.append("".join(message_parts))
-            message_parts = [single_message]
-        else:
-            message_parts.append(single_message)
-    
-    # 如果是最后一个命令结果，确保添加到分页中
-    if i == len(results) - 1:
-        if message_parts:
-            pages.append("".join(message_parts))
+        message += f"服务器 {hostname} 上执行 '{command_executed}' 的结果是: {result}\n"
 
-# 发送所有分页的消息
-total_pages = len(pages)
-for page, page_content in enumerate(pages, start=1):
-    send_wechat_message(wechat_webhook_url, page_content, page, total_pages)
+# 计算总页数
+total_length = len(message)
+pages = (total_length + MAX_MESSAGE_LENGTH - 1) // MAX_MESSAGE_LENGTH  # 向上取整
+
+# 分割消息内容并发送
+for page in range(1, pages + 1):
+    start_index = (page - 1) * MAX_MESSAGE_LENGTH
+    end_index = start_index + MAX_MESSAGE_LENGTH
+    page_content = message[start_index:end_index]
+    send_wechat_message(wechat_webhook_url, page_content, page, pages)
