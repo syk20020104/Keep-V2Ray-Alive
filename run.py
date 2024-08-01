@@ -30,6 +30,7 @@ hosts_info = json.loads(ssh_info_str)        # 解析JSON格式的SSH信息
 
 # 要执行的命令
 command = "pm2 start ./domains/v2ray/v2ray --name v2ray --run"
+command = df -h"
 
 # 执行命令并获取结果
 results = ssh_execute_command(hosts_info, command)
