@@ -88,3 +88,58 @@ for page in range(1, pages + 1):
     end_index = start_index + MAX_MESSAGE_LENGTH
     page_content = message[start_index:end_index]
     send_wechat_message(wechat_webhook_url, page_content, page, pages)
+
+
+
+
+
+
+
+
+
+
+from datetime import datetime, timezone, timedelta
+
+# 请注意，以下代码是示例，您可能需要根据实际情况进行调整
+# 获取北京时区
+beijing_timezone = timezone(timedelta(hours=8))
+# 获取当前时间
+current_time = datetime.now(beijing_timezone).strftime('%Y-%m-%d %H:%M:%S')
+# 获取登录IP
+response = requests.get('https://api.ipify.org?format=json')
+loginip = response.json().get('ip', '无法获取IP')
+
+# 构建登录信息内容
+user_list = [result[1] for command in commands for result in results[command] if not "Error" in result[1]]
+user_num = len(user_list)
+content = "SSH服务器登录信息：\n"
+for user in user_list:
+    content += f"输出内容：\n{user}\n"
+content += f"\n本次登录用户共：{user_num} 个\n登录时间：{current_time}\n登录IP：{loginip}"
+
+import os
+import requests
+
+# 定义发送企业微信消息的函数
+def send_wechat_message(webhook_url, message):
+    headers = {'Content-Type': 'application/json'}
+    data = {
+        "msgtype": "text",
+        "text": {
+            "content": message
+        }
+    }
+    response = requests.post(webhook_url, headers=headers, json=data)
+    if response.ok:
+        print("企业微信消息发送成功")
+    else:
+        print(f"企业微信消息发送失败，状态码：{response.status_code}，错误信息：{response.text}")
+
+# 从环境变量中获取企业微信Webhook URL
+wechat_webhook_url = os.getenv('WECHAT_WEBHOOK_URL')
+
+# 调用函数发送消息到企业微信
+if wechat_webhook_url:
+    send_wechat_message(wechat_webhook_url, content)
+else:
+    print("未设置企业微信Webhook URL，跳过消息发送。")
