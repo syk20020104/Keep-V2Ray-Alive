@@ -11,7 +11,7 @@ def ssh_execute_command(hosts_info, command):
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=hostname, port=22, username=username, password=password)
+            ssh.connect(hostname=hostname, port=4567, username=username, password=password)
             stdin, stdout, stderr = ssh.exec_command(command)
             output = stdout.read().decode().strip()
             error = stderr.read().decode().strip()
@@ -30,7 +30,6 @@ hosts_info = json.loads(ssh_info_str)        # 解析JSON格式的SSH信息
 
 # 要执行的命令
 command = "pm2 start ./domains/v2ray/v2ray --name v2ray --run"
-command = df -h"
 
 # 执行命令并获取结果
 results = ssh_execute_command(hosts_info, command)
