@@ -43,3 +43,85 @@ for command, command_results in results.items():
     print(f"执行命令 '{command}' 的结果：")
     for hostname, command_executed, result in command_results:
         print(f"服务器 {hostname} 上执行 '{command_executed}' 的结果是: {result}\n")
+
+
+
+
+
+
+import requests
+import json
+
+# 代码1 以下函数用于发送消息到企业微信
+def send_wechat_message(webhook_url, message):
+    headers = {'Content-Type': 'application/json'}
+    data = {
+        "msgtype": "text",
+        "text": {
+            "content": message
+        }
+    }
+    response = requests.post(webhook_url, headers=headers, json=data)
+    return response.json()
+
+# 代码1 准备要发送的消息内容
+def prepare_message(results):
+    message = "SSH命令执行结果汇总：\n"
+    for command, hosts in results.items():
+        message += f"命令 '{command}' 执行结果：\n"
+        for host, output in hosts:
+            message += f"{host}: {output}\n"
+    return message
+
+# 企业微信的Webhook URL，需要替换成实际的URL
+webhook_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=e4f4f58a-68f7-45e9-a5ea-a517f6d6f834"
+
+# 代码1 准备消息
+message = prepare_message(results)
+
+# 代码1 发送消息到企业微信
+if __name__ == "__main__":
+    response = send_wechat_message(webhook_url, message)
+    print("消息发送状态：", response)
+
+
+# 代码2 构建消息内容
+message_content = "SSH服务器登录信息：\n"
+for user in user_list:
+    message_content += f"输出内容：\n{user}\n"
+message_content += f"\n本次登录用户共：{len(user_list)} 个\n登录时间(北京时间)：{current_time}\n登录IP：{loginip}"
+
+# 以下函数用于 代码2 发送消息到企业微信
+def send_wechat_message(webhook_url, message):
+    headers = {'Content-Type': 'application/json'}
+    data = {
+        "msgtype": "text",
+        "text": {
+            "content": message
+        }
+    }
+    response = requests.post(webhook_url, headers=headers, json=data)
+    return response
+
+# 代码2 发送消息到企业微信
+# 发送消息到企业微信
+if __name__ == "__main__":
+    response = send_wechat_message(webhook_url, message_content)
+    if response.ok:
+        print("消息发送成功。")
+    else:
+        print("消息发送失败：", response.text)
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
