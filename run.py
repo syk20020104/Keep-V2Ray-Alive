@@ -52,56 +52,45 @@ for command, command_results in results.items():
 import requests
 
 # 定义发送企业微信消息的函数
-def send_wechat_message(webhook_url, message):
+def send_wechat_message(webhook_url, message, page=1, total_pages=None):
     headers = {'Content-Type': 'application/json'}
     data = {
         "msgtype": "text",
         "text": {
-            "content": message
+            "content": f"{message}\n\n第 {page} 页，共 {total_pages} 页"
         }
     }
     response = requests.post(webhook_url, headers=headers, json=data)
     if response.ok:
-        print("企业微信消息发送成功")
+        print(f"第 {page} 页消息发送成功")
     else:
-        print(f"企业微信消息发送失败，状态码：{response.status_code}，错误信息：{response.text}")
+        print(f"第 {page} 页消息发送失败，状态码：{response.status_code}，错误信息：{response.text}")
 
 # 从环境变量中获取企业微信Webhook URL
 wechat_webhook_url = os.getenv('WECHAT_WEBHOOK_URL')
 
-# 设置每条消息的最大长度和每批次的消息数量
-MAX_MESSAGE_LENGTH = 1024
-BATCH_SIZE = 5
+# 设置每条消息的最大长度和每页显示的命令结果数量
+MAX_PAGE_SIZE = 5  # 每页最多显示5条命令结果
 
-# 准备要发送的消息批次
-batches = []
-message = ""
-
+# 准备消息并分页
+pages = []
+message_parts = []
 for i, (command, command_results) in enumerate(results.items()):
-    # 构建每条命令的摘要信息
-    summary = f"执行命令 '{command}' 的结果摘要：\n"
-    for j, (hostname, _, result) in enumerate(command_results):
-        if len(summary) + len(result) > MAX_MESSAGE_LENGTH:
-            if j > 0:
-                summary += "...（部分结果省略）"
-            break
-        summary += f"服务器 {hostname}：{result}\n"
+    for hostname, command_executed, result in command_results:
+        single_message = f"命令 '{command}' 在服务器 {hostname} 上执行结果: {result}\n"
+        if len(message_parts) >= MAX_PAGE_SIZE and message_parts:
+            # 当达到每页最大消息数时，存储当前页消息并重置
+            pages.append("".join(message_parts))
+            message_parts = [single_message]
+        else:
+            message_parts.append(single_message)
     
-    # 如果消息过长，则创建新的批次
-    if len(message) + len(summary) > MAX_MESSAGE_LENGTH:
-        batches.append(message)
-        message = summary
-    else:
-        message += summary + "\n\n"
-    
-    # 如果达到批次大小，发送当前批次并重置消息
-    if (i + 1) % BATCH_SIZE == 0 or i == len(results) - 1:
-        batches.append(message)
-        message = ""
+    # 如果是最后一个命令结果，确保添加到分页中
+    if i == len(results) - 1:
+        if message_parts:
+            pages.append("".join(message_parts))
 
-# 发送所有批次的消息
-for batch in batches:
-    if wechat_webhook_url:
-        send_wechat_message(wechat_webhook_url, batch)
-    else:
-        print("未设置企业微信Webhook URL，跳过消息发送。")
+# 发送所有分页的消息
+total_pages = len(pages)
+for page, page_content in enumerate(pages, start=1):
+    send_wechat_message(wechat_webhook_url, page_content, page, total_pages)
