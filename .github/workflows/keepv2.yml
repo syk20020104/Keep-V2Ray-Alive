@@ -1,23 +1,35 @@
-name: Keep V2Ray Alive
+name: SSH Login
 
 on:
   schedule:
-    - cron: '0 * * * *' # 每小时运行一次
+    - cron: '0 13 */7 * *'  # 每月的5号北京时间19点运行
+  workflow_dispatch:
 
 jobs:
-  keep-alive:
+  ssh-login:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '14' # 根据需要设置 Node.js 版本
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install paramiko
 
-    - name: Start V2Ray with PM2
-      run: pm2 start ./v2ray --name my-v2ray
+      - name: Run Python script
+        env:
+          SSH_INFO: ${{ secrets.SSH_INFO }}
+          # 以下环境变量根据需要添加，如果脚本中使用到的话
+          # PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          # MAIL: ${{ secrets.MAIL }}
+          # PUSH: ${{ secrets.PUSH }}
+          # TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: python run.py
