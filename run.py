@@ -69,18 +69,39 @@ def send_wechat_message(webhook_url, message):
 # 从环境变量中获取企业微信Webhook URL
 wechat_webhook_url = os.getenv('WECHAT_WEBHOOK_URL')
 
-# 准备要发送的消息内容
-message = "SSH命令执行结果汇总：\n"
-for command, command_results in results.items():
-    message += f"执行命令 '{command}' 的结果：\n"
-    for hostname, command_executed, result in command_results:
-        message += f"服务器 {hostname} 上执行 '{command_executed}' 的结果是: {result}\n"
+# 设置每条消息的最大长度和每批次的消息数量
+MAX_MESSAGE_LENGTH = 1024
+BATCH_SIZE = 5
 
-# 发送消息到企业微信
-if wechat_webhook_url:
-    send_wechat_message(wechat_webhook_url, message)
-else:
-    print("未设置企业微信Webhook URL，跳过消息发送。")
+# 准备要发送的消息批次
+batches = []
+message = ""
 
+for i, (command, command_results) in enumerate(results.items()):
+    # 构建每条命令的摘要信息
+    summary = f"执行命令 '{command}' 的结果摘要：\n"
+    for j, (hostname, _, result) in enumerate(command_results):
+        if len(summary) + len(result) > MAX_MESSAGE_LENGTH:
+            if j > 0:
+                summary += "...（部分结果省略）"
+            break
+        summary += f"服务器 {hostname}：{result}\n"
+    
+    # 如果消息过长，则创建新的批次
+    if len(message) + len(summary) > MAX_MESSAGE_LENGTH:
+        batches.append(message)
+        message = summary
+    else:
+        message += summary + "\n\n"
+    
+    # 如果达到批次大小，发送当前批次并重置消息
+    if (i + 1) % BATCH_SIZE == 0 or i == len(results) - 1:
+        batches.append(message)
+        message = ""
 
-
+# 发送所有批次的消息
+for batch in batches:
+    if wechat_webhook_url:
+        send_wechat_message(wechat_webhook_url, batch)
+    else:
+        print("未设置企业微信Webhook URL，跳过消息发送。")
