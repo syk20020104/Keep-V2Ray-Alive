@@ -49,7 +49,7 @@ for command, command_results in results.items():
 
 
 #############################################
-以下是代码1的微信推送代码
+#以下是代码1的微信推送代码
 
 
 
@@ -102,7 +102,7 @@ for page in range(1, pages + 1):
 
 
 #############################################
-以下是代码2
+#以下是代码2
 
 from datetime import datetime, timezone, timedelta
 
