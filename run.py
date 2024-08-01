@@ -48,6 +48,11 @@ for command, command_results in results.items():
 
 
 
+#############################################
+以下是代码1的微信推送代码
+
+
+
 import requests
 
 # 定义发送企业微信消息的函数
@@ -96,7 +101,8 @@ for page in range(1, pages + 1):
 
 
 
-
+#############################################
+以下是代码2
 
 from datetime import datetime, timezone, timedelta
 
@@ -112,9 +118,9 @@ loginip = response.json().get('ip', '无法获取IP')
 # 构建登录信息内容
 user_list = [result[1] for command in commands for result in results[command] if not "Error" in result[1]]
 user_num = len(user_list)
-content = "SSH服务器登录信息：\n"
+content = "SSH服务器登录运行信息：\n"
 for user in user_list:
-    content += f"输出内容：\n{user}\n"
+    content += f"运行的命令：\n{user}\n"
 content += f"\n本次登录用户共：{user_num} 个\n登录时间：{current_time}\n登录IP：{loginip}"
 
 import os
